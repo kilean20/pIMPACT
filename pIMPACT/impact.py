@@ -11,12 +11,12 @@ import os
 
 
 
-def run(nProc=None):
+def run(nCore=None):
     impact_path = os.path.abspath(os.path.dirname(__file__))
-    if nProc == None:
+    if nCore == None:
         os.system(impact_path+'/ImpactZ > log')        
     else:
-        os.system('mpirun -n '+nProc + ' '+impact_path+'/ImpactZexe > log')
+        os.system('mpirun -n '+str(nCore) + ' '+impact_path+'/ImpactZexe > log')
 ###############################################################################
 ###############################################################################
 ###                      IMPACT INPUT GENERATOR                             ###
