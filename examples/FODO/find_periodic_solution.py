@@ -11,7 +11,7 @@ import pIMPACT as pm
 beam, lattice = pm.readIMPACT('FODO.in')
 
 beam['energy']=300E6
-beam['n_particles']=200
+beam['n_particles']=500
 beam['current']=0.0
 #if space-charge considered uncomment followings
 #beam['n_particles']=3000
@@ -47,24 +47,24 @@ def objFunc(arg):
     os.chdir(target) # cd to the randome directory and
     
     pm.writeIMPACT('test.in',beam,lattice)
-    os.run(nProc=8) # run impact there
+    pm.run() # run impact there
     
     X=pm.readBeamSize('x')
     Y=pm.readBeamSize('y')
     betx, alfx, enx, bety, alfy, eny, betz, alfz, enz = pm.readOpticsAtEnd()
     
     # optimize average rms size to 1.5 mm
-    obj = np.sum( (np.array(X)*1E3-1.5)**2 + (np.array(Y)*1E3-1.5)**2 )
+    obj1 = np.sum( (np.array(X)*1E3-1.5)**2 + (np.array(Y)*1E3-1.5)**2 )
     # periodic condition
-    obj = obj + (betx - arg[1])**4 + (5.0*alfx + 5.0*arg[2])**4 +\
-                (bety - arg[1])**4 + (5.0*alfy - 5.0*arg[2])**4
+    obj2 = (betx - arg[1])**4 + (5.0*alfx + 5.0*arg[2])**4 +\
+           (bety - arg[1])**4 + (5.0*alfy - 5.0*arg[2])**4
     os.chdir('..')
     shutil.rmtree(target)
-    return obj
+    return obj1 + 10*obj2
 #%% run optim
-bounds = [(7.0,13.0), (6.0,10.0), (1.0,1.7)]
-result=pm.opt.differential_evolution(objFunc, bounds, ncore=16, popsize=8, 
-                                     disp=True, polish=True, maxtime=60*1) 
+bounds = [(7.0,14.0), (6.0,12.0), (0.9,2.1)]
+result=pm.opt.differential_evolution(objFunc, bounds, ncore=24, popsize=8, 
+                                     disp=True, polish=False, maxtime=60*1) 
                                      # stop running at maximum 1 min
 # save current population of optimization 
 with open('result.data','wb') as fp:
@@ -75,9 +75,9 @@ with open('result.data','wb') as fp:
 while True:
     with open('result.data','rb') as fp:
         previous_result = pickle.load(fp)
-    result = pm.opt.differential_evolution(objFunc, bounds, ncore=16, 
+    result = pm.opt.differential_evolution(objFunc, bounds, ncore=24, 
                                            prev_result=previous_result, 
-                                           disp=True, polish=True, maxtime=60*1)
+                                           disp=True, polish=False, maxtime=60*1)
     if hasattr(result,'x'): 
         break                            
 
@@ -96,7 +96,7 @@ def print_result(arg):
     os.chdir(target)      
     
     pm.writeIMPACT('test.in',beam,lattice)
-    os.system('./ImpactZ > log')
+    pm.run() # run impact there
     
     X=pm.readBeamSize('x')
     Y=pm.readBeamSize('y')
