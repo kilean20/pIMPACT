@@ -10,7 +10,6 @@ import os
 # key data structure are 'beam' and 'element' dictionary
 
 
-
 def run(nCore=None):
     impact_path = os.path.abspath(os.path.dirname(__file__))
     if nCore == None:
@@ -576,8 +575,27 @@ def readLossAtEnd(fileLoc=''):
     file.close()
     return int(lines[-1].split()[1])
     
-def readParticleData(fileID, ke, mass, freq, fileLoc=''):
-    data=np.loadtxt(fileLoc+'fort.'+str(fileID))
+        
+#%%############################################################################
+###############################################################################
+###                      Particle data Manipulator                          ###
+###############################################################################
+############################################################################### 
+
+def normalizeParticleData(data, ke, mass, freq):
+    gamma = ke/mass+1.0
+    beta = np.sqrt(1.0-1.0/(gamma*gamma))
+    x_norm = 2*freq*3.141592653589793/299792458
+    px_norm = gamma*beta
+    data[:,0] = data[:,0]*x_norm
+    data[:,1] = data[:,1]*px_norm
+    data[:,2] = data[:,2]*x_norm
+    data[:,3] = data[:,3]*px_norm    
+    data[:,4] = np.pi/180*data[:,4]
+    data[:,5] = 1E6/mass*data[:,5]
+    return data
+    
+def unNormalizeParticleData(data, ke, mass, freq):
     gamma = ke/mass+1.0
     beta = np.sqrt(1.0-1.0/(gamma*gamma))
     x_norm = 2*freq*3.141592653589793/299792458
@@ -588,23 +606,17 @@ def readParticleData(fileID, ke, mass, freq, fileLoc=''):
     data[:,3] = data[:,3]/px_norm    
     data[:,4] = 180/np.pi*data[:,4]
     data[:,5] = 1E-6*mass*data[:,5]
-    return data
+    return data      
+      
+def readParticleData(fileID, ke, mass, freq, fileLoc=''):
+    data=np.loadtxt(fileLoc+'fort.'+str(fileID))
+    return unNormalizeParticleData(data, ke, mass, freq)
     
 def readParticleDataSliced(nSlice, fileID, ke, mass, freq, zSliced=True, fileLoc=''):
     data=np.loadtxt(fileLoc+'fort.'+str(fileID))
-    gamma = ke/mass+1.0
-    beta = np.sqrt(1.0-1.0/(gamma*gamma))
-    x_norm = 2*freq*3.141592653589793/299792458
-    px_norm = gamma*beta
-    data[:,0] = data[:,0]/x_norm
-    data[:,1] = data[:,1]/px_norm
-    data[:,2] = data[:,2]/x_norm
-    data[:,3] = data[:,3]/px_norm    
-    data[:,4] = 180/np.pi*data[:,4]
-    data[:,5] = 1E-6*mass*data[:,5]
+    data=unNormalizeParticleData(data, ke, mass, freq)
     
-    f=[]
-    
+    f=[]    
     if zSliced:
         z_min = min(data[:,4])
         z_max = max(data[:,4])
@@ -615,7 +627,6 @@ def readParticleDataSliced(nSlice, fileID, ke, mass, freq, zSliced=True, fileLoc
                 if z_min + i*dz < data[j,4] < z_min + (i+1)*dz :
                     temp.append(data[j,:])
             f.append(np.array(temp))
-                    
         return f
         
     else:
@@ -627,10 +638,12 @@ def readParticleDataSliced(nSlice, fileID, ke, mass, freq, zSliced=True, fileLoc
             for j in range(len(data[:,5])):
                 if ke_min + i*dke < data[j,5] < ke_min + (i+1)*dke :
                     temp.append(data[j,:])
-            f.append(np.array(temp))
-                    
-        return f        
-    
+            f.append(np.array(temp))  
+        return f
+        
+def writeParticleData(data, ke, mass, freq, fileLoc='',filename='partcl.data'):
+    data=normalizeParticleData(data, ke, mass, freq)
+    np.savetxt(filename,data,header=str(len(data))+' 0. 0.',comments='')
 #%%############################################################################
 ###############################################################################
 ###                           Lattice Manipulator                           ###

@@ -41,7 +41,7 @@ class _element:
         self.positions[-1,0]=z               
 
              
-def _lattice(h, lattice_info, fileDir='',):
+def _lattice(h, lattice_info, fileDir=''):
     
     lattice_offset = lattice_info['offset']
     lattice_scale = lattice_info['scale']
@@ -180,7 +180,7 @@ def _x_emittance(h, halo=None, fileDir='', plotRange=None, lattice_info=None):
     
     h.plot(S,X_emittance,'b')
     h.plot(S,Y_emittance,'r')
-    h.set_ylabel(r'$\mathsf{norm.\, \epsilon \, (mm-mrad)}$', fontsize=11)   
+    h.set_ylabel(r'$\mathsf{norm.\, \epsilon \, (mm \, mrad)}$', fontsize=11)   
     
     if lattice_info != None:
         if lattice_info['scale']==None:
@@ -211,10 +211,13 @@ def _x_emittance(h, halo=None, fileDir='', plotRange=None, lattice_info=None):
         h.set_xlim([s_min,s_max])
     else:
         if 's' in plotRange:
-            h.set_xlim(plotRange['s'])        
-            h2.set_xlim(plotRange['s'])  
+            h.set_xlim(plotRange['s'])
+            if isinstance(halo,int) and X.shape[1] == 10:
+                h2.set_xlim(plotRange['s'])  
         if 'ex' in plotRange:        
-            h.set_ylim(plotRange['ex'])  
+            h.set_ylim(plotRange['ex']) 
+        if isinstance(halo,int) and X.shape[1] == 10 and 'Delta_ex' in plotRange:
+            h2.set_ylim(plotRange['Delta_ex'])              
     
 
 #%% Plot longitudinal RMS statistics
@@ -290,7 +293,7 @@ def _z_emittance(h, halo=None, fileDir='', plotRange=None, lattice_info=None):
     s_min=min(S)   
     
     h.plot(S,Z_emittance,'b')
-    h.set_ylabel(r'$\mathsf{\epsilon \, (deg-MeV)}$', fontsize=11)
+    h.set_ylabel(r'$\mathsf{\epsilon \, (deg\,MeV)}$', fontsize=11)
     
     if lattice_info != None:
         if lattice_info['scale']==None:
@@ -317,10 +320,13 @@ def _z_emittance(h, halo=None, fileDir='', plotRange=None, lattice_info=None):
         h.set_xlim([s_min,s_max])
     else:
         if 's' in plotRange:
-            h.set_xlim(plotRange['s'])        
-            h2.set_xlim(plotRange['s'])  
+            h.set_xlim(plotRange['s'])   
+            if isinstance(halo,int) and Z.shape[1] == 10:
+                h2.set_xlim(plotRange['s'])  
         if 'ez' in plotRange:        
             h.set_ylim(plotRange['ez'])  
+        if isinstance(halo,int) and Z.shape[1] == 10 and 'Delta_ez' in plotRange:
+            h2.set_ylim(plotRange['Delta_ez'])   
 
     
     
@@ -424,7 +430,11 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
     plt.savefig(fileDir+'z'+str(savefileID)+'.png', dpi=240)
 
 
-#%% Plot max Amplitude
+#%%############################################################################
+###############################################################################
+###                            max amplitude plots                          ###
+###############################################################################
+############################################################################### 
 def _getLatticeInfo_4maxPlot(x=True, px=True, z=True, pz=True):
     lattice_info = {}
     if x:
@@ -473,19 +483,21 @@ def maxAmplitude(savefileID=0, fileDir='',
             _getLatticeInfo(lattice_info['x'], minX, maxX)
         _lattice(sub1, lattice_info['x'], fileDir=fileDir) 
         
-    if plotRange==None:
-        sub1.set_xlim([s_min,s_max])
-    else:
-        if 's' in plotRange:
-            sub1.set_xlim(plotRange['s'])        
-        if 'x' in plotRange:        
-            sub1.set_ylim(plotRange['x'])        
     
     sub2 = sub1.twinx()  
     sub2.plot(S,Z,'r')
     sub2.set_ylabel(r'$\mathsf{ z_{max} \, (deg)}$', fontsize=12)       
-    if plotRange !=None and 'z' in plotRange:       
-        sub2.set_ylim(plotRange['z'])    
+        
+    if plotRange==None:
+        sub1.set_xlim([s_min,s_max])
+    else:
+        if 's' in plotRange:
+            sub1.set_xlim(plotRange['s'])   
+            sub2.set_xlim(plotRange['s']) 
+        if 'x' in plotRange:   
+            sub1.set_ylim(plotRange['x'])   
+        if 'z' in plotRange:     
+            sub2.set_ylim(plotRange['z'])
         
     plt.tight_layout() 
     plt.savefig(fileDir+'max_radius'+str(savefileID)+'.png', dpi=240)
@@ -530,7 +542,11 @@ def maxAmplitude(savefileID=0, fileDir='',
 
     
     
-#%% Plot particle loss
+#%%############################################################################
+###############################################################################
+###                               particle loss                             ###
+###############################################################################
+############################################################################### 
 from impact import readIMPACT
 def powerLoss(savefileID=0, fileDir='', lattice_info=None, plotRange=None):
             
@@ -571,86 +587,6 @@ def powerLoss(savefileID=0, fileDir='', lattice_info=None, plotRange=None):
 ###                              phase-space plots                          ###
 ###############################################################################
 ############################################################################### 
-#def phase_space(n,freq,ke,mass,saveDir='',z=None,plotRange=None):
-#    
-#    data=np.loadtxt('fort.'+str(n))
-#    sigmax=np.std(data[:,0])
-#    sigmapx=np.std(data[:,1])
-#    mux=-np.mean(data[:,0]*data[:,1])/sigmax/sigmapx;
-#    
-#    sigmay=np.std(data[:,2])
-#    sigmapy=np.std(data[:,3])
-#    muy=-np.mean(data[:,2]*data[:,3])/sigmay/sigmapy;
-#    
-#    sigmaz=np.std(data[:,4])
-#    sigmapz=np.std(data[:,5])
-#    muz=-np.mean(data[:,4]*data[:,5])/sigmaz/sigmapz;
-#    
-#    data[:,6]=data[:,0]*data[:,0]/(sigmax*sigmax) \
-#              +data[:,1]*data[:,1]/(sigmapx*sigmapx) \
-#              +2*mux*data[:,0]*data[:,1]/(sigmax*sigmapx)
-#    data[:,7]=data[:,2]*data[:,2]/(sigmay*sigmay) \
-#              +data[:,3]*data[:,3]/(sigmapy*sigmapy) \
-#              +2*muy*data[:,2]*data[:,3]/(sigmay*sigmapy)
-#    data[:,8]=data[:,4]*data[:,4]/(sigmaz*sigmaz) \
-#              +data[:,5]*data[:,5]/(sigmapz*sigmapz) \
-#              +2*muz*data[:,4]*data[:,5]/(sigmaz*sigmapz)
-#    
-#
-#    gamma = ke/mass+1.0
-#    beta = np.sqrt(1.0-1.0/(gamma*gamma))
-#    
-#    dimX=2*np.pi*freq/299792458
-#    dimPx=gamma*beta
-#    #dimPx=1;
-#    
-#    fig = plt.figure()
-#    plt.rcParams.update({'font.size': 9})
-#    ax=fig.add_subplot(131)
-#    ax.scatter(1E3*data[:,0]/dimX, 1E3*data[:,1]/dimPx,c=-np.sqrt(data[:,6]),marker='.',edgecolors='none' )
-#    ax.grid()          
-#    ax.xlabel("x (m)")
-#    ax.ylabel("p_x (mrad) ")
-#    #ax.set_xlim([-6,6])
-#    #ax.set_ylim([-2.0,2.0])
-#    #print([1E3*sigmax/dimX,1E3*sigmapx/dimPx])    
-#    
-#    
-#    ay=fig.add_subplot(132)
-#    ay.scatter(1E3*data[:,2]/dimX, 1E3*data[:,3]/dimPx,c=-np.sqrt(data[:,7]),marker='.',edgecolors='none' )
-#    ay.grid()
-#    ay.set_title("y[mm]-y'[mrad]")
-#    #ay.set_xlim([-6,6])
-#    #ay.set_ylim([-2.0,2.0])
-#    #print([1E3*sigmay/dimX,1E3*sigmapy/dimPx]) 
-#    
-#    az=fig.add_subplot(133)
-#    az.scatter(180/np.pi*data[:,4], 1E-6*mass*data[:,5],
-#               c=-np.sqrt(data[:,8]), marker='.', edgecolors='none' )
-#    az.grid()
-#    az.set_title("ph[deg@"+str(int(freq*1.0E-6))+"]-W[MeV]")
-#    #print([180/np.pi*sigmaz, 1E-6*mass*sigmapz]) 
-#    #az.set_xlim([-13,13])
-#    #az.set_ylim([-1.0,1.0])
-#    if plotRange != None:
-#        ax.set_xlim(plotRange[0])
-#        ax.set_ylim(plotRange[1])
-#        ay.set_xlim(plotRange[2])
-#        ay.set_ylim(plotRange[3])
-#        az.set_xlim(plotRange[4])
-#        az.set_ylim(plotRange[5])
-#    if z!=None:
-#        plt.title()
-#    
-#    plt.tight_layout()
-#    
-#    if saveDir == '':
-#        plt.savefig('poincare'+str(n)+'.png', dpi=1200)
-#    else:        
-#        if not os.path.exists(saveDir):
-#            os.makedirs(saveDir)
-#        plt.savefig('./'+saveDir+'/poincare'+str(n)+'.png', dpi=240)
-
 #%% plot poincare of sliced bunch
 from impact import readParticleDataSliced
 def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
@@ -750,27 +686,61 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
                               "{0:.3f}".format(np.mean(data[:,4]))+" degree", 
                               y=1.05, fontsize=13)
             if saveDir == '':
-                plt.savefig('poincare'+str(fileID)+'_z'+str(i)+'.png', dpi=240)
+                plt.savefig('phase_space'+str(fileID)+'_z'+str(i)+'.png', dpi=240)
             else:        
                 if not os.path.exists(saveDir):
                     os.makedirs(saveDir)
-                plt.savefig('./'+saveDir+'/poincare'+str(fileID)+'_z'+str(i)+'.png', dpi=240)                          
+                plt.savefig('./'+saveDir+'/phase_space'+str(fileID)+'_z'+str(i)+'.png', dpi=240)                          
         else:
             if nSlice !=1:
                 fig.suptitle( str(n_particles)+" particles of bunch slice at "+
                               "{0:.3f}".format(np.mean(data[:,5]))+"MeV", 
                                y=1.05, fontsize=13)
             if saveDir == '':
-                plt.savefig('poincare'+str(fileID)+'_E'+str(i)+'.png', dpi=240)
+                plt.savefig('phase_space'+str(fileID)+'_E'+str(i)+'.png', dpi=240)
             else:        
                 if not os.path.exists(saveDir):
                     os.makedirs(saveDir)
-                plt.savefig('./'+saveDir+'/poincare'+str(fileID)+'_E'+str(i)+'.png', dpi=240)                                                                 
+                plt.savefig('./'+saveDir+'/phase_space'+str(fileID)+'_E'+str(i)+'.png', dpi=240)                                                                 
                          
         
         
 
         
-    
+#%% density plot
+try:
+    from scipy import stats
+    def poincare(X,Px, fname, xlabel=None, ylabel=None, iTurn=None, sigma=None, sampleRate=1, 
+                     xlim=None, ylim=None, ftsize=20, figsize=16, flagDensity=True, mksize=10):
+                
+        plt.rcParams['xtick.labelsize'] = ftsize-2
+        plt.rcParams['ytick.labelsize'] = ftsize-2
+        X=X[0::sampleRate];Px=Px[0::sampleRate]
+        plt.figure(figsize=(figsize, figsize), dpi=240)
+        if flagDensity :
+            kernel = stats.gaussian_kde([X,Px])
+            cData = kernel.evaluate([X,Px])
+            plt.scatter(X,Px, c=cData, s=mksize, lw = 0)
+        else:
+            plt.scatter(X,Px, s=mksize, lw = 0)
+        if xlim!=None:
+            plt.xlim(-xlim,xlim)
+        if ylim!=None:        
+            plt.ylim(-ylim,ylim)
+        if xlabel!=None:
+            plt.xlabel(xlabel, fontsize=ftsize)
+        if ylabel!=None:
+            plt.ylabel(ylabel, fontsize=ftsize)
+        if iTurn!=None:
+            plt.text(0.8*xlim,-0.8*ylim,iTurn,fontsize=ftsize-1)
+        if sigma!=None:
+            plt.text(0.55*xlim,0.8*ylim,np.around(sigma,decimals=3),fontsize=ftsize-1)
+        
+        plt.savefig(fname+'.png',format='png')
+        plt.savefig(fname+'.eps',format='eps')
+        plt.close()
+except:
+    print 'scipy not found. pIMPACT.plot.poincare module is disabled'
+
         
         

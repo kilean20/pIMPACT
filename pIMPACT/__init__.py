@@ -5,5 +5,5 @@ import os
 try:
     import plot
 except:
-    print 'matplotlib is not found. pIMPACT.plot module is disabled'
+    print 'matplotlib not found. pIMPACT.plot module is disabled'
 #import track_scrf as track
