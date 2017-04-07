@@ -389,7 +389,7 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
     
     plt.tight_layout() 
     plt.savefig(fileDir+'x'+str(savefileID)+'.png', dpi=240)
-
+    plt.close()
     
     # longitudinal
     fig = plt.figure() 
@@ -428,7 +428,7 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
 
     plt.tight_layout() 
     plt.savefig(fileDir+'z'+str(savefileID)+'.png', dpi=240)
-
+    plt.close()
 
 #%%############################################################################
 ###############################################################################
@@ -534,7 +534,7 @@ def maxAmplitude(savefileID=0, fileDir='',
 
     plt.tight_layout() 
     plt.savefig(fileDir+'max_energy'+str(savefileID)+'.png', dpi=240)
-        
+    plt.close()        
 
         
 
@@ -581,6 +581,8 @@ def powerLoss(savefileID=0, fileDir='', lattice_info=None, plotRange=None):
 
     plt.tight_layout() 
     plt.savefig(fileDir+'loss'+str(savefileID)+'.png', dpi=240)
+    plt.close()
+
 
 #%%############################################################################
 ###############################################################################
