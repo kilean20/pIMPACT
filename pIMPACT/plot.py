@@ -712,13 +712,13 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
 #%% density plot
 try:
     from scipy import stats
-    def poincare(X,Px, fname, xlabel=None, ylabel=None, iTurn=None, sigma=None, sampleRate=1, 
+    def poincare(X,Px, fname='poincare', xlabel=None, ylabel=None, iTurn=None, sigma=None, sampleRate=1, 
                      xlim=None, ylim=None, ftsize=20, figsize=16, flagDensity=True, mksize=10):
                 
         plt.rcParams['xtick.labelsize'] = ftsize-2
         plt.rcParams['ytick.labelsize'] = ftsize-2
         X=X[0::sampleRate];Px=Px[0::sampleRate]
-        plt.figure(figsize=(figsize, figsize), dpi=240)
+        fig=plt.figure(figsize=(figsize, figsize), dpi=240)
         if flagDensity :
             kernel = stats.gaussian_kde([X,Px])
             cData = kernel.evaluate([X,Px])
@@ -740,6 +740,9 @@ try:
         
         plt.savefig(fname+'.png',format='png')
         plt.savefig(fname+'.eps',format='eps')
+        fig.set_size_inches(1.5,1.5)
+        plt.tick_params(axis='both', which='major', labelsize=5)
+        plt.show()
         plt.close()
 except:
     print 'scipy not found. pIMPACT.plot.poincare module is disabled'

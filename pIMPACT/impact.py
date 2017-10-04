@@ -13,9 +13,9 @@ import os
 def run(nCore=None):
     impact_path = os.path.abspath(os.path.dirname(__file__))
     if nCore == None:
-        os.system(impact_path+'/ImpactZ > log')        
+        return os.system(impact_path+'/ImpactZ > log')
     else:
-        os.system('mpirun -n '+str(nCore) + ' '+impact_path+'/ImpactZexe > log')
+        return os.system('mpirun -n '+str(nCore) + ' '+impact_path+'/ImpactZexe > log')
 ###############################################################################
 ###############################################################################
 ###                      IMPACT INPUT GENERATOR                             ###
@@ -186,15 +186,15 @@ def getElem(elemType) :
                 'scale': 34.0e6, 'frequency': 650e6 , 'phase': 0.0, 
                 'input file id' : 1, 'radius': 1.0}   # phase [degree]
     elif elemType=='kick' :
-        return {'type':'kick', 'dx': 0.0 , 'dpx': 0.0, 'dy' : 0.0, 'dpy': 0.0, 
+        return {'type':'kick', 'length': 0.0,'dx': 0.0 , 'dpx': 0.0, 'dy' : 0.0, 'dpy': 0.0, 
                 'dz' : 0.0, 'dpz': 0.0}   
                 # dx,dy in meter, dpx,dpy in radian, dz in degree, dpz in MeV   
     elif elemType=='write full' :
-        return {'type':'write full', 'file id': 1000}
+        return {'type':'write full', 'length': 0.0, 'file id': 1000}
     elif elemType=='restart' :
-        return {'type':'restart'}      
+        return {'type':'restart', 'length': 0.0}      
     elif elemType=='halt' :
-        return {'type':'halt'}              
+        return {'type':'halt', 'length': 0.0}              
         
 def elem2str(elemDict): 
     """
@@ -363,6 +363,17 @@ def writeIMPACT(filename,beam,lattice=[]):
     f.writelines(latticeStrList)
     f.close()
 
+
+def updateLattice(lattice):
+#   update lattice such that each begining location of element is saved
+#   input 
+#       lattice = (list) list of elemenet dictionaries
+    z=0.
+    for i in range(len(lattice)):
+        lattice[i]['z']=z
+        z=z+lattice[i]['length']
+        
+        
 def readIMPACT(filename='test.in'):
 #   read a IMPACT input file 
 #   output : (list) element dictionaries
@@ -376,6 +387,7 @@ def readIMPACT(filename='test.in'):
             row_start=i
             break
     lattice=str2lattice(lines[row_start+1:])
+    updateLattice(lattice)
     beam=str2beam(lines[0:row_start])
     return beam, lattice
         
@@ -403,15 +415,24 @@ def readReferenceOrbitAt(zIndex,fileloc=''):
 def readReferenceOrbitAtEnd(fileloc=''):
     return readReferenceOrbit(fileloc)[-1]   
 
-def readZIndex(z,fileloc=''):
+def readZIndex(z,fileloc='',flagRef=False):
     rf = readReferenceOrbit(fileloc)
-    dz = abs(rf[0][0]-z)
     for i in range(1,len(rf)) :
-        if  dz > abs(rf[i][0]-z) :
-            dz=abs(rf[i][0]-z)
-            f=i
-    return f, rf[f][0]
-
+        z1 =  rf[i][0]
+        if z-z1 < 0 :
+            break
+    if z1-z < z-rf[i-1][0]:
+        if flagRef:
+            return i,rf[i]
+        else:
+            return i,rf[i][0]
+    else:
+        if flagRef:
+            return i-1,rf[i-1]
+        else:
+            return i-1,rf[i-1][0]
+    
+    
 def readBeamSize(direction,nSkip=1,fileLoc=''):
 #   Read RMS beam size
 #   input 
@@ -649,15 +670,19 @@ def writeParticleData(data, ke, mass, freq, fileLoc='',filename='partcl.data'):
 ###                           Lattice Manipulator                           ###
 ###############################################################################
 ############################################################################### 
-def updateLattice(lattice):
-#   update lattice such that each begining location of element is saved
-#   input 
-#       lattice = (list) list of elemenet dictionaries
-    z=0.
-    for i in range(len(lattice)):
-        lattice[i]['z']=z
-        z=z+lattice[i]['length']
 
+def getZIndex(lattice,z):
+    updateLattice(lattice)
+    
+    for i in range(len(lattice)):
+        z1 =  lattice[i]['z']+lattice[i]['length']
+        if z-z1 < 0 :
+            break
+    if z1-z < z-lattice[i]['z'] :
+        return i+1,z1
+    else:
+        return i,lattice[i]['z']
+        
     
 #def divideLattice(Z,lattice):
 #    updateLattice(lattice)
