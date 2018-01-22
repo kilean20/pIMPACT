@@ -22,7 +22,14 @@ def differential_evolution(func, bounds, strategy='rand1bin',
                            mutation=(0.5, 1), recombination=0.9, seed=None,
                            callback=None, disp=False, polish=True, ncore=1,
                            init='random',maxtime=60*30):
-    """Finds the global minimum of a multivariate function.
+    """
+    result = differential_evolution(func, bounds, strategy='rand1bin', 
+                           prev_result=OptimizeResult(), best_arg=None,
+                           maxiter=None, popsize=15, tol=0.01,
+                           mutation=(0.5, 1), recombination=0.9, seed=None,
+                           callback=None, disp=False, polish=True, ncore=1,
+                           init='random',maxtime=60*30)
+    Finds the global minimum of a multivariate function.
     Differential Evolution is stochastic in nature (does not use gradient
     methods) to find the minimium, and can search large areas of candidate
     space, but often requires larger numbers of function evaluations than

@@ -8,7 +8,6 @@ Created on Thu Jun 23 12:48:25 2016
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
 #%%############################################################################
 ##            internel class and function to layout lattice plot             ##
 ###############################################################################
@@ -659,7 +658,7 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
             sigmapz=np.std(data[:,5])
             dz=data[:,4]-np.mean(data[:,4])
             dpz=data[:,5]-np.mean(data[:,5])
-            muz=-np.mean(dz*dpz);        
+            muz=-np.mean(dz*dpz); 
 
             data[:,8]= np.sqrt( dz*dz*(sigmapz*sigmapz) 
                                 +2.0*muz*dz*dpz+

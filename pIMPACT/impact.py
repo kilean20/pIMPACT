@@ -26,6 +26,7 @@ def run(nCore=None):
 #==============================================================================
 def getBeam() :
     """
+    Beam = getBeam()
     get a template of a beam dictionary. 
     units : 
         mass : eV
@@ -60,6 +61,9 @@ def twiss2beam(beam,betx=0.0,alfx=0.0,norm_ex=0.0,
                     bety=0.0,alfy=0.0,norm_ey=0.0,
                     betz=0.0,alfz=0.0,norm_ez=0.0):
     """
+    twiss2beam(beam,betx=0.0,alfx=0.0,norm_ex=0.0,
+                    bety=0.0,alfy=0.0,norm_ey=0.0,
+                    betz=0.0,alfz=0.0,norm_ez=0.0)
     update the beam distribution using twiss parameters 
     !! IMPORTANT : energy and frequency must be updated before hand    
     input 
@@ -106,11 +110,12 @@ def twiss2beam(beam,betx=0.0,alfx=0.0,norm_ex=0.0,
         
 def beam2str(beam):
     """
+    beamStrList = beam2str(beam)
     from beam to string list of IMPACT format
     input 
        x = (dict) beam 
     output 
-        f = (list) list of string of IMPACT format of beam
+        beamStrList = (list) list of string of IMPACT format of beam
     """
     beamStrList=[str(beam['nCore_x'])+' '+str(beam['nCore_y'])+' \n',
                  '6 '+str(beam['n_particles'])+' 2 '+\
@@ -135,6 +140,7 @@ def beam2str(beam):
      
 def str2beam(beamStr):
     """
+    beam = str2beam(beamStr)
     from string list of IMPACT format to beam
     input 
         beamStr = (list) list of string of IMPACT format
@@ -163,9 +169,12 @@ def str2beam(beamStr):
 #%%#================================element====================================
 def getElem(elemType) : 
     """
+    f = getElem(elemType)
     get a template of an element dictionary.  
     input 
-        elemType = (str) element type
+        elemType = (str) element type. one of the following
+                   'drift', 'quad', 'bend', 'scrf', 
+                   'kick', 'write full', 'restart', 'halt'
     output 
         f = (dict) element dictionary
     """
@@ -198,6 +207,7 @@ def getElem(elemType) :
         
 def elem2str(elemDict): 
     """
+    f = elem2str(elemDict)
     from element to (IMPACT format) string
     input 
         x = (dict) element dictionary
@@ -243,11 +253,14 @@ def elem2str(elemDict):
 
     
 def str2elem(elemStr): 
-#   from (IMPACT format) string to element  
-#   input 
-#       elemStr = (str) string of a IMPACT lattice line
-#   output 
-#       elemtDict = (dict) element dictionary 
+    """
+    elemtDict = str2elem(elemStr)
+    from (IMPACT format) string to element  
+    input 
+        elemStr = (str) string of a IMPACT lattice line
+    output 
+        elemtDict = (dict) element dictionary 
+    """
     elemStr = elemStr.split()
     elemID=int(float(elemStr[3]))
     if elemID == 0:
@@ -309,22 +322,28 @@ def str2elem(elemStr):
 #%%=================================lattice====================================
 #lattice is a list of element dictionaries
 def lattice2str(lattice):
-#   from lattice to string list of IMPACT format
-#   input 
-#       x = (list) lattice 
-#   output 
-#       f = (list) list of string of of IMPACT format
+    """
+    f = lattice2str(lattice)
+    from lattice to string list of IMPACT format
+    input 
+        x = (list) lattice 
+    output 
+        f = (list) list of string of of IMPACT format
+    """
     latticeStr = []
     for i in range(len(lattice)):
         latticeStr.append(elem2str(lattice[i]))
     return latticeStr
     
 def str2lattice(latticeStr):
-#   from string list of IMPACT format to lattice
-#   input 
-#       latticeStr = (list) list of string of of IMPACT format
-#   output 
-#       lattice = (list) list of element dictionaries
+    """
+    lattice = str2lattice(latticeStr)
+    from string list of IMPACT format to lattice
+    input 
+        latticeStr = (list) list of string of of IMPACT format
+    output 
+        lattice = (list) list of element dictionaries
+    """
     lattice = []
     for i in range(len(latticeStr)):
         if latticeStr[i] in ['\n', '\r\n'] or latticeStr[i][0]=='!':
@@ -336,11 +355,14 @@ def str2lattice(latticeStr):
 
 
 def getElemIndex(lattice,typename):
-#   from lattice list of dictionary to single element lattice list of dictionary
-#   input 
-#       lattice = (list) list of elements dictionaries
-#   output 
-#       oneElemLattice = (list) list of one type(=typename) element dictionaries
+    """
+    oneElemLattice = getElemIndex(lattice,typename)
+    from lattice list of dictionary to single element lattice list of dictionary
+    input 
+        lattice = (list) list of elements dictionaries
+    output 
+        oneElemLattice = (list) list of one type(=typename) element dictionaries
+    """
     f=[]
     for i in range(len(lattice)):
         if lattice[i]['type']==typename:
@@ -350,10 +372,12 @@ def getElemIndex(lattice,typename):
 #                               IMPACT test.in I/O                                
 #==============================================================================  
 def writeIMPACT(filename,beam,lattice=[]):
-#   write a IMPACT input file
-#   input 
-#       beam = (dict) beam dictionary
-#       lattce = (list) list of element dictionaries
+    """
+    write a IMPACT input file
+    input 
+        beam = (dict) beam dictionary
+        lattce = (list) list of element dictionaries
+    """
     beamStrList=beam2str(beam)                 
     latticeStrList=lattice2str(lattice)
     
@@ -365,9 +389,11 @@ def writeIMPACT(filename,beam,lattice=[]):
 
 
 def updateLattice(lattice):
-#   update lattice such that each begining location of element is saved
-#   input 
-#       lattice = (list) list of elemenet dictionaries
+    """
+    update lattice such that each begining location of element is saved
+    input 
+        lattice = (list) list of elemenet dictionaries
+    """
     z=0.
     for i in range(len(lattice)):
         lattice[i]['z']=z
@@ -375,8 +401,11 @@ def updateLattice(lattice):
         
         
 def readIMPACT(filename='test.in'):
-#   read a IMPACT input file 
-#   output : (list) element dictionaries
+    """
+    beam, lattice = readIMPACT(filename='test.in')
+    read a IMPACT input file 
+    output : (list) element dictionaries
+    """
     file = open(filename,'r')
     lines = file.readlines()
     file.close()
@@ -413,7 +442,7 @@ def readReferenceOrbitAt(zIndex,fileloc=''):
     return [float(lines[zIndex].split()[i]) for i in range(5)]
 
 def readReferenceOrbitAtEnd(fileloc=''):
-    return readReferenceOrbit(fileloc)[-1]   
+    return readReferenceOrbit(fileloc)[-1]
 
 def readZIndex(z,fileloc='',flagRef=False):
     rf = readReferenceOrbit(fileloc)
@@ -434,13 +463,16 @@ def readZIndex(z,fileloc='',flagRef=False):
     
     
 def readBeamSize(direction,nSkip=1,fileLoc=''):
-#   Read RMS beam size
-#   input 
-#       direction = (char) 'x', 'y' or 'z'
-#       nSkip = (int>0) number of lines to skip when reading output    
-#   output 
-#       f = (list) each element of list is a vector of 
-#                  rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
+    f = readBeamSize(direction,nSkip=1,fileLoc='')
+    Read RMS beam size
+    input 
+        direction = (char) 'x', 'y' or 'z'
+        nSkip = (int>0) number of lines to skip when reading output    
+    output 
+        f = (list) each element of list is a vector of 
+                   rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
     if direction == 'x':
         file = open(fileLoc+'fort.24','r')
     elif direction == 'z':
@@ -456,13 +488,16 @@ def readBeamSize(direction,nSkip=1,fileLoc=''):
 
 
 def readBeamSizeAt(zIndex,direction,nSkip=1,fileLoc=''):
-#   Read RMS beam size at location corresponds to zIndex
-#   input 
-#       direction = (char) 'x', 'y' or 'z'
-#       nSkip = (int>0) number of lines to skip when reading output    
-#   output 
-#       f = (list) each element of list is a vector of 
-#                  rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
+    f = readBeamSizeAt(zIndex,direction,nSkip=1,fileLoc=''):
+    Read RMS beam size at location corresponds to zIndex
+    input 
+        direction = (char) 'x', 'y' or 'z'
+        nSkip = (int>0) number of lines to skip when reading output    
+    output 
+        f = (list) each element of list is a vector of 
+                   rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
     if direction == 'x':
         file = open(fileLoc+'fort.24','r')
     elif direction == 'z':
@@ -481,12 +516,16 @@ def readBeamSizeAtEnd(fileLoc=''):
           
     
 def readOptics(direction,nSkip=1,fileLoc=''):
-#   Read Optics functions ( Optics ftn is calcualted using beam porfile )
-#   input 
-#       zIndex = (int) 
-#       fileLoc = (string) path
-#   output 
-#       self expnained
+    """
+    f = readOptics(direction,nSkip=1,fileLoc='')
+    Read Optics functions ( Optics ftn is calcualted using beam porfile )
+    input 
+        zIndex = (int) 
+        nSkip  = sampling rate from beam distribution output file of IMPACTz
+        fileLoc = (string) path
+    output 
+        f = optics parameters at every (sampling rate of nSkip) 
+    """
     if direction == 'x':
         file = open(fileLoc+'fort.24','r')
     elif direction == 'z':
@@ -506,12 +545,15 @@ def readOptics(direction,nSkip=1,fileLoc=''):
     return f
     
 def readOpticsAt(zIndex, direction, fileLoc=''):
-#   Read Optics function at location corresponds to zIndex
-#   input 
-#       zIndex = (int) 
-#       fileLoc = (string) path
-#   output 
-#       self expnained
+    """
+    beta, alpha, emittance_norm = readOpticsAt(zIndex, direction, fileLoc=''):
+    Read Optics function at location corresponds to zIndex
+    input 
+        zIndex = (int) 
+        fileLoc = (string) path
+    output 
+        optics parameters at the location specified by zIndex
+    """
     if direction == 'x':
         file = open(fileLoc+'fort.24','r')
     elif direction == 'z':
@@ -533,13 +575,16 @@ def readOpticsAtEnd(fileLoc=''):
            readOpticsAt(-1,'y',fileLoc) + readOpticsAt(-1,'z',fileLoc)
    
 def readCentroid(direction, nSkip=1, fileLoc=''):
-#   Read RMS beam size
-#   input 
-#       direction = (char) 'x', 'y' or 'z'
-#       nSkip = (int>0) number of lines to skip when reading output    
-#   output 
-#       f = (list) each element of list is a vector of 
-#                  rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
+    f = readCentroid(direction, nSkip=1, fileLoc='')
+    Read RMS beam size
+    input 
+        direction = (char) 'x', 'y' or 'z'
+        nSkip = (int>0) number of lines to skip when reading output    
+    output 
+        f = (list) each element of list is a vector of 
+                   rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
     if direction == 'x':
         file = open(fileLoc+'fort.24','r')
     elif direction == 'z':
@@ -554,13 +599,16 @@ def readCentroid(direction, nSkip=1, fileLoc=''):
     return f    
 
 def readCentroidAt(zIndex, direction, fileLoc=''):
-#   Read RMS beam size
-#   input 
-#       direction = (char) 'x', 'y' or 'z'
-#       nSkip = (int>0) number of lines to skip when reading output    
-#   output 
-#       f = (list) each element of list is a vector of 
-#                  rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
+    f = readCentroidAt(zIndex, direction, fileLoc='')
+    Read RMS beam size
+    input 
+        direction = (char) 'x', 'y' or 'z'
+        nSkip = (int>0) number of lines to skip when reading output    
+    output 
+        f = (list) each element of list is a vector of 
+                   rms_x,px,y,py,z,E (meter, rad, deg, MeV)
+    """
     if direction == 'x':
         file = open(fileLoc+'fort.24','r')
     elif direction == 'z':
@@ -611,9 +659,9 @@ def normalizeParticleData(data, ke, mass, freq):
     data[:,0] = data[:,0]*x_norm
     data[:,1] = data[:,1]*px_norm
     data[:,2] = data[:,2]*x_norm
-    data[:,3] = data[:,3]*px_norm    
+    data[:,3] = data[:,3]*px_norm
     data[:,4] = np.pi/180*data[:,4]
-    data[:,5] = 1E6/mass*data[:,5]
+    data[:,5] = data[:,5]/mass
     return data
     
 def unNormalizeParticleData(data, ke, mass, freq):
@@ -624,11 +672,11 @@ def unNormalizeParticleData(data, ke, mass, freq):
     data[:,0] = data[:,0]/x_norm
     data[:,1] = data[:,1]/px_norm
     data[:,2] = data[:,2]/x_norm
-    data[:,3] = data[:,3]/px_norm    
+    data[:,3] = data[:,3]/px_norm
     data[:,4] = 180/np.pi*data[:,4]
-    data[:,5] = 1E-6*mass*data[:,5]
-    return data      
-      
+    data[:,5] = mass*data[:,5]
+    return data
+
 def readParticleData(fileID, ke, mass, freq, fileLoc=''):
     data=np.loadtxt(fileLoc+'fort.'+str(fileID))
     return unNormalizeParticleData(data, ke, mass, freq)
@@ -695,7 +743,83 @@ def getZIndex(lattice,z):
 #            if lattice[i]['type'] == 'scrf':
                              
             
-        
+#%%############################################################################
+###############################################################################
+###                   Physical analysis with Impact                         ###
+###############################################################################
+###############################################################################  
+
+def getTransferMap(lattice,q,mass,ke,freq,
+                   epsilon=[1e-8,1e-6,1e-8,1e-6,1e-7,1e-8],
+                   #epsilon=[1e-11,1e-9,1e-11,1e-9,1e-11,1e-11],
+                   fname='test.in' ):
+    """
+    M = getTransferMap(lattice,q,mass,ke,freq,
+                       epsilon=[1e-9,1e-6,1e-9,1e-6,1e-3,1e-9],
+                       fname='test.in' )
+    get linear transfer map (without space-charge)  by tracking 6 particles
+    whose initial phase-space perturbation given by epsilon
+    input                
+        lattice = (dict) lattice dictionary whose transvermap to be determined
+        q = charge (-1.0 for electron)
+        ke = reference particle energy at lattice entrance [MeV]
+        mass = particle mass [MeV]
+        freq = reference RF frequency [Hz]
+        epsilon = 6 dimension array of perturbation for 
+                  x,px,y,py, z*360/v/freq, E  in unit of 
+                  [m],[rad],[m],[rad],[deg],[MeV]
+                  default : epsilon = [1e-e-8,1e-6,1e-8,1e-6,1e-7,1e-8]
+        fname = input file name for IMPACTz 
+                depending on version of IMPACTz the file name may change
+                default is 'test.in'
+    """
+    beam = getBeam()
+    beam['mass'] = mass*1e6
+    beam['charge per mass'] = q/beam['mass']
+    beam['energy'] = ke*1e6
+    beam['n_particles'] = 6
+    beam['frequency'] = freq
+    beam['distribution id'] = 19
+
+    fPool = []
+    for i in range(len(lattice)):
+        if 'file id' in lattice[i]:
+            fPool.append(lattice[i]['file id'])
+    fileID = 5555
+    while True:
+        if fileID in fPool:
+            fileID = np.random.randint(low=1000,high=9999)
+        else:
+            break
+    lattice.append(getElem('write full'))
+    lattice[-1]['file id'] = fileID
+    writeIMPACT(fname,beam,lattice)
+    lattice.pop()
+    
+    data = np.zeros([6,9])
+    for i in range(6):
+        data[i,i] = epsilon[i]
+        data[i,8] = i+1
+    data[:,6] = beam['charge per mass']
+    writeParticleData(data, ke, mass, freq)
+    
+    run()
+    
+    dataOut = readParticleData(fileID, ke, mass, freq)[:,:6]
+    #os.system('rm fort.'+str(fileID))
+    m,n = dataOut.shape
+    M = np.zeros([6,6])
+    if m<6:
+        print 'particle lost observed. too large inital perturbation'
+    else:
+        for i in range(6):
+            M[:,i] = dataOut[i,:]/epsilon[i]
+    return M
+    
+
+    
+
+
 #%%############################################################################
 ###############################################################################
 ###                           OUTPUT Manipulator                            ###
