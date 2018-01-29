@@ -1,6 +1,7 @@
 """
-differential_evolution: The differential evolution global optimization algorithm
-Added by Andrew Nelson 2014
+[Copyright - the Scipy community] original version by Andrew Nelson 2014
+Modified scipy.optimize.differential_evolution to include multi-core, real-time 
+stop criteria, and restart from previous result for optimzed use on super computers 
 Modified and Parallelaized by Kilean 2016
 """
 from __future__ import division, print_function, absolute_import
