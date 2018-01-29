@@ -29,6 +29,10 @@ def differential_evolution(func, bounds, strategy='rand1bin',
                            mutation=(0.5, 1), recombination=0.9, seed=None,
                            callback=None, disp=False, polish=True, ncore=1,
                            init='random',maxtime=60*30)
+    [Copyright - the Scipy community]
+    Modified scipy.optimize.differential_evolution to include multi-core,
+    real-time stop criteria, and restart from previous result for optimzed 
+    use on super computers 
     Finds the global minimum of a multivariate function.
     Differential Evolution is stochastic in nature (does not use gradient
     methods) to find the minimium, and can search large areas of candidate
