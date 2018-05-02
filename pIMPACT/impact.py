@@ -11,6 +11,13 @@ import os
 
 
 def run(nCore=None):
+    """
+    ierr = run(nCore=None)
+    
+    run IMPACTz
+    infer the source code directly and modify 
+    to change executable path
+    """  
     impact_path = os.path.abspath(os.path.dirname(__file__))
     if nCore == None:
         return os.system(impact_path+'/ImpactZ > log')
@@ -27,6 +34,7 @@ def run(nCore=None):
 def getBeam() :
     """
     Beam = getBeam()
+    
     get a template of a beam dictionary. 
     units : 
         mass : eV
@@ -36,6 +44,8 @@ def getBeam() :
         frequency : Hz
         phase : radian
         charge per mass = charge number / mass : 1/eV
+    output :
+        Beam : (dict) Beam parameters 
     """
     beam = {'nCore_x':1,'nCore_y':1,
             'mass': 938.27231e6, # eV/c^2
@@ -64,16 +74,17 @@ def twiss2beam(beam,betx=0.0,alfx=0.0,norm_ex=0.0,
     twiss2beam(beam,betx=0.0,alfx=0.0,norm_ex=0.0,
                     bety=0.0,alfy=0.0,norm_ey=0.0,
                     betz=0.0,alfz=0.0,norm_ez=0.0)
+                    
     update the beam distribution using twiss parameters 
     !! IMPORTANT : energy and frequency must be updated before hand    
     input 
         beam = (dict) beam dictionary to be updated
-        betx = beta-function in x-direction
-        alfx = alpha-function in x-direction
-        norm_ex = normalized emittance in x-direction    
-        betz = beta-function in z-direction
+        betx,y = beta-function in x-direction [meter]
+        alfx,y = alpha-function in x-direction
+        norm_ex,y = normalized emittance in x-direction [meter]
+        betz = beta-function in z-direction   [degree/MeV]
         alfz = alpha-function in z-direction
-        norm_ez = normalized emittance in z-direction      
+        norm_ez = normalized emittance in z-direction  [degree-MeV]
     """
     clight = 299792458  # m/s
     rel_gamma = 1.0 + beam['energy']/beam['mass']
@@ -111,6 +122,7 @@ def twiss2beam(beam,betx=0.0,alfx=0.0,norm_ex=0.0,
 def beam2str(beam):
     """
     beamStrList = beam2str(beam)
+    
     from beam to string list of IMPACT format
     input 
        x = (dict) beam 
@@ -141,6 +153,7 @@ def beam2str(beam):
 def str2beam(beamStr):
     """
     beam = str2beam(beamStr)
+    
     from string list of IMPACT format to beam
     input 
         beamStr = (list) list of string of IMPACT format
@@ -170,6 +183,7 @@ def str2beam(beamStr):
 def getElem(elemType) : 
     """
     f = getElem(elemType)
+    
     get a template of an element dictionary.  
     input 
         elemType = (str) element type. one of the following
@@ -208,6 +222,7 @@ def getElem(elemType) :
 def elem2str(elemDict): 
     """
     f = elem2str(elemDict)
+    
     from element to (IMPACT format) string
     input 
         x = (dict) element dictionary
@@ -255,6 +270,7 @@ def elem2str(elemDict):
 def str2elem(elemStr): 
     """
     elemtDict = str2elem(elemStr)
+    
     from (IMPACT format) string to element  
     input 
         elemStr = (str) string of a IMPACT lattice line
@@ -324,6 +340,7 @@ def str2elem(elemStr):
 def lattice2str(lattice):
     """
     f = lattice2str(lattice)
+    
     from lattice to string list of IMPACT format
     input 
         x = (list) lattice 
@@ -338,6 +355,7 @@ def lattice2str(lattice):
 def str2lattice(latticeStr):
     """
     lattice = str2lattice(latticeStr)
+    
     from string list of IMPACT format to lattice
     input 
         latticeStr = (list) list of string of of IMPACT format
@@ -357,6 +375,7 @@ def str2lattice(latticeStr):
 def getElemIndex(lattice,typename):
     """
     oneElemLattice = getElemIndex(lattice,typename)
+    
     from lattice list of dictionary to single element lattice list of dictionary
     input 
         lattice = (list) list of elements dictionaries
@@ -375,8 +394,11 @@ def writeIMPACT(filename,beam,lattice=[]):
     """
     write a IMPACT input file
     input 
+        filename = (str) IMPACT input filename
         beam = (dict) beam dictionary
         lattce = (list) list of element dictionaries
+    outfile
+        filename
     """
     beamStrList=beam2str(beam)                 
     latticeStrList=lattice2str(lattice)
@@ -571,6 +593,14 @@ def readOpticsAt(zIndex, direction, fileLoc=''):
         return beta, alpha, emittance_norm
    
 def readOpticsAtEnd(fileLoc=''):
+    """
+    betX,alfX,enX,betY,alfY,enY,betZ,alfZ,enZ, = readOpticsAtEnd(fileLoc=''):
+    Read Optics function at location corresponds to zIndex
+    input 
+        fileLoc = (string) path
+    output 
+        optics parameters at the end of lattice ie. end of IMPACT output
+    """
     return readOpticsAt(-1,'x',fileLoc) +\
            readOpticsAt(-1,'y',fileLoc) + readOpticsAt(-1,'z',fileLoc)
    
@@ -682,6 +712,22 @@ def readParticleData(fileID, ke, mass, freq, fileLoc=''):
     return unNormalizeParticleData(data, ke, mass, freq)
     
 def readParticleDataSliced(nSlice, fileID, ke, mass, freq, zSliced=True, fileLoc=''):
+    """
+    pData = readParticleDataSliced(nSlice, fileID, ke, mass, freq, 
+                                   zSliced=True, fileLoc='')
+    
+    slice particle data into energy or longtudinal bin
+    input : 
+        nSlice : (int) number of slices
+        fileID : (int) field ID to read IMPACT particle output
+        ke : (real) kinetic energy of the IMPACT particle output
+        freq : (real) reference frequency used to define 
+                      longitudinal coordinate
+        zSliced : (bool) if False, energy bin sliced
+        fileLoc : (string) path to the IMPACT particle output
+    output
+        pData : (numpy arr) slized particle data
+    """
     data=np.loadtxt(fileLoc+'fort.'+str(fileID))
     data=unNormalizeParticleData(data, ke, mass, freq)
     

@@ -1,4 +1,5 @@
 pIMPACT/ImpactZ
+pIMPACT/ImpactZexe
 pIMPACT/__init__.py
 pIMPACT/differential_evolution.py
 pIMPACT/impact.py

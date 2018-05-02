@@ -58,6 +58,7 @@ def _lattice(h, lattice_info, fileDir=''):
     Bend=_element(lattice,4)
     Quad=_element(lattice,1)
     
+    
     h.fill_between(RF.positions[:,0], lattice_offset, 
                    lattice_offset+lattice_scale*RF.positions[:,1], alpha=0.2, 
                    facecolor='black', color="none", hatch="X")
@@ -70,7 +71,10 @@ def _lattice(h, lattice_info, fileDir=''):
     h.fill_between(Bend.positions[:,0], lattice_offset, 
                    lattice_offset+lattice_scale*Bend.positions[:,1], alpha=0.1, 
                    facecolor='black', color="none", hatch="o")
-                   
+    L=0.0
+    for elem in lattice:
+      L=L+elem[0]
+    h.plot([0,L],[lattice_offset,lattice_offset],'k-',linewidth=0.5)
 def _getLatticeInfo(lattice_info=None, minX=0.0, maxX=1.0):
     if lattice_info==None:
         return {'file':'test.in','offset':None, 'scale':None}
@@ -129,8 +133,8 @@ def _x_envelope(h, fileDir='',flag_maxRadius=False,
 
 # p_xy envelope
 def _px_envelope(h, fileDir='', plotRange=None, lattice_info=None):
-    '''                
-    h = matplotlib handle
+    '''
+    in/out : h = matplotlib handle
     '''
     X=np.loadtxt(fileDir+'fort.24')
     Y=np.loadtxt(fileDir+'fort.25')
@@ -331,6 +335,9 @@ def _z_emittance(h, halo=None, fileDir='', plotRange=None, lattice_info=None):
     
 #%% Plot RMS statistics
 def _getLatticeInfo_4rmsPlot(x=True, px=True, ex=False, z=True, pz=True, ez=False):
+    """
+    lattice_info = _getLatticeInfo_4rmsPlot(x=True, px=True, ex=False, z=True, pz=True, ez=False)
+    """
     lattice_info = {}
     if x:
         lattice_info['x'] = {'file':'test.in','offset':None, 'scale':None}
@@ -348,16 +355,37 @@ def _getLatticeInfo_4rmsPlot(x=True, px=True, ex=False, z=True, pz=True, ez=Fals
     
 def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_maxRadius=False,
         plot_momentum=True, halo=None, plotRange=None):
-            
+    """
+    figX,figZ = rms(savefileID=0, fileDir='', 
+                    lattice_info=_getLatticeInfo_4rmsPlot(), 
+                    flag_maxRadius=False, plot_momentum=True,
+                    halo=None, plotRange=None)
+    plot rms beam profile evolution. IMPACT must be ran priori.
+    input 
+        savefileID : (int) fileID for plot save
+        plot_momentum : (bool) plot px,py,pz or not
+        flag_maxRadius : (bool) plot max amplitude out of all particles
+        plotRange : (matplotlib plot range)
+        halo : (int) any of 90,95,99 indicating 90,95,99% rms quantities
+               (priori : non-standard IMPACT ouput flag)
+        lattice_info : for advanced user
+                       infer the source of _getLatticeInfo_4rmsPlot() 
+    output
+      figX : matplotlib figure for x,y RMS info
+      figY : matplotlib figure for z RMS info
+    output to file
+      fileDir+'x'+str(savefileID)+'.png'
+      fileDir+'z'+str(savefileID)+'.png'
+    """            
     plt.rcParams.update({'font.size': 9})  
     # transverse
-    fig = plt.figure() 
+    figX = plt.figure() 
     
     if plot_momentum:
         plotid = 311
     else:
         plotid = 211
-    sub1=fig.add_subplot(plotid)
+    sub1=figX.add_subplot(plotid)
     if 'x' in lattice_info:
         info = lattice_info['x']
     else :
@@ -372,12 +400,12 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
             info = lattice_info['px']
         else :
             info = None
-        sub2=fig.add_subplot(plotid)
+        sub2=figX.add_subplot(plotid)
         _px_envelope(sub2,fileDir=fileDir, plotRange=plotRange, lattice_info=info)
 
 
     plotid=plotid+1
-    sub3=fig.add_subplot(plotid)
+    sub3=figX.add_subplot(plotid)
     if 'ex' in lattice_info:
         info = lattice_info['ex']
     else :
@@ -391,12 +419,12 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
     plt.close()
     
     # longitudinal
-    fig = plt.figure() 
+    figZ = plt.figure() 
     if plot_momentum:
         plotid = 311
     else:
         plotid = 211
-    sub1=fig.add_subplot(plotid)
+    sub1=figZ.add_subplot(plotid)
     if 'z' in lattice_info:
         info = lattice_info['z']
     else :
@@ -407,7 +435,7 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
 
     if plot_momentum:
         plotid=plotid+1
-        sub2=fig.add_subplot(plotid)
+        sub2=figZ.add_subplot(plotid)
         if 'pz' in lattice_info:
             info = lattice_info['pz']
         else :
@@ -416,7 +444,7 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
 
 
     plotid=plotid+1
-    sub3=fig.add_subplot(plotid)
+    sub3=figZ.add_subplot(plotid)
     if 'ez' in lattice_info:
         info = lattice_info['ez']
     else :
@@ -428,7 +456,8 @@ def rms(savefileID=0, fileDir='', lattice_info=_getLatticeInfo_4rmsPlot(), flag_
     plt.tight_layout() 
     plt.savefig(fileDir+'z'+str(savefileID)+'.png', dpi=240)
     plt.close()
-
+    return figX,figZ
+  
 #%%############################################################################
 ###############################################################################
 ###                            max amplitude plots                          ###
@@ -592,7 +621,27 @@ def powerLoss(savefileID=0, fileDir='', lattice_info=None, plotRange=None):
 from impact import readParticleDataSliced
 def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
                 plotRange = None, fileDir='', saveDir='', showAll=False):
+    """
+    Fig = phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
+                      plotRange = None, fileDir='', saveDir='', 
+                      showAll=False):
+                
+    phase-space plot of sliced particle data. 
+    Density plot imposed if Scipy is installed.
+    input : 
+        fileID : (int) fileID of IMPACT particle output
+        ke  : (real) reference kinetic energy 
+        mass : (real) particle mass
+        freq : (real) reference frequency used to define 
+                      longitudinal coordinate
+        zSliced : (bool) longitudinal / energy slice
+        nSlice : (int) number of slices
+        ...
+    output :
+       Fig : (list) matplotlib figures of each slice
+    """
     pData = readParticleDataSliced(nSlice, fileID, ke, mass, freq, zSliced)
+    Fig = []
     for i in range(nSlice):
         data = pData[i]
         n_particles = len(data)
@@ -624,13 +673,13 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
         
         if showAll :
             row_col_i = 141
-            fig = plt.figure(figsize=(9.6, 2.4))
+            Fig.append(plt.figure(figsize=(9.6, 2.4)))
         else:
             row_col_i = 131   
-            fig = plt.figure(figsize=(7.2, 2.4))
+            Fig.append(plt.figure(figsize=(7.2, 2.4)))
         
         plt.rcParams.update({'font.size': 9})
-        ax=fig.add_subplot(row_col_i)
+        ax=Fig[-1].add_subplot(row_col_i)
         ax.scatter(1E3*data[:,0], 1E3*data[:,1],
                    c=-data[:,6],marker='.',edgecolors='none' )
         ax.grid()          
@@ -638,7 +687,7 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
         ax.set_ylabel(r"$\mathsf{p_x}$"+' (mrad)',fontsize=10) 
         
         
-        ay=fig.add_subplot(row_col_i+1)
+        ay=Fig[-1].add_subplot(row_col_i+1)
         ay.scatter(1E3*data[:,2], 1E3*data[:,3],
                    c=-data[:,7],marker='.',edgecolors='none' )
         ay.grid() 
@@ -646,7 +695,7 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
         ay.set_ylabel(r"$\mathsf{p_y}$"+' (mrad)',fontsize=10) 
 
         
-        axy=fig.add_subplot(row_col_i+2)
+        axy=Fig[-1].add_subplot(row_col_i+2)
         axy.scatter(1E3*data[:,0], 1E3*data[:,2],
                    c=-data[:,8], marker='.', edgecolors='none' )
         axy.grid()
@@ -664,7 +713,7 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
                                 +2.0*muz*dz*dpz+
                                 +dpz*dpz*(sigmaz*sigmaz) )                  
                       
-            az=fig.add_subplot(row_col_i+3)
+            az=Fig[-1].add_subplot(row_col_i+3)
             az.scatter(data[:,4], data[:,5],
                        c=-data[:,8], marker='.', edgecolors='none' )
             az.grid()
@@ -683,7 +732,7 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
         
         if zSliced==True:
             if nSlice !=1:
-                fig.suptitle( str(n_particles)+" particles of bunch slice at "+
+                Fig[-1].suptitle( str(n_particles)+" particles of bunch slice at "+
                               "{0:.3f}".format(np.mean(data[:,4]))+" degree", 
                               y=1.05, fontsize=13)
             if saveDir == '':
@@ -694,7 +743,7 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
                 plt.savefig('./'+saveDir+'/phase_space'+str(fileID)+'_z'+str(i)+'.png', dpi=240)                          
         else:
             if nSlice !=1:
-                fig.suptitle( str(n_particles)+" particles of bunch slice at "+
+                Fig[-1].suptitle( str(n_particles)+" particles of bunch slice at "+
                               "{0:.3f}".format(np.mean(data[:,5]))+"MeV", 
                                y=1.05, fontsize=13)
             if saveDir == '':
@@ -702,12 +751,10 @@ def phase_space(fileID, ke, mass, freq, zSliced=True, nSlice=1,
             else:        
                 if not os.path.exists(saveDir):
                     os.makedirs(saveDir)
-                plt.savefig('./'+saveDir+'/phase_space'+str(fileID)+'_E'+str(i)+'.png', dpi=240)                                                                 
-                         
-        
-        
+                plt.savefig('./'+saveDir+'/phase_space'+str(fileID)+'_E'+str(i)+'.png', dpi=240)
+    return Fig
 
-        
+
 #%% density plot
 try:
     from scipy import stats
