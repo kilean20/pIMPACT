@@ -35,7 +35,7 @@ def KtoB1(K,ke,mass):
     rigidity=cLight/(mass*rel_bet*rel_gam)
     return K/rigidity    
     
-def phaseAdvancePerMeter(freq,ke,mass):
+def RFphaseAdvancePerMeter(freq,ke,mass):
     rel_gam=ke/mass+1.0
     rel_bet=np.sqrt(1.0-1.0/rel_gam/rel_gam)
     return freq*2.0*np.pi/cLight/rel_bet

@@ -9,8 +9,8 @@ import pIMPACT as pm
 
 #%%
 beam = pm.getBeam()
-beam['nCore_x']=4
-beam['nCore_y']=4
+beam['nCore_x']=1
+beam['nCore_y']=1
 beam['energy'] = 300.0E6     # MeV
 beam['mass'] = pm.util.Mp   # proton mass MeV/c^2
 beam['current'] = 0.02       # current averaged over bunch length ( bunch length is 1/frequency ). Set to 0 if no spage-charge
@@ -51,7 +51,7 @@ pm.twiss2beam(beam,betx,alfx,enx,bety,alfy,eny,betz,alfz,enz) # use twiss parame
 pm.writeIMPACT('test.in',beam,lattice)
 
 #%%
-pm.run(nCore = 16)
+pm.run()#(nCore = 16)
 #%%
 # read reference orbit 
 #pm.readReferenceOrbit()  # z[meter] , phase advance [degree], gamma, kinetic energy [MeV], beta 
@@ -69,3 +69,13 @@ pm.plot.rms(3,halo=95)
 
 #%%
 pm.plot.maxAmplitude()
+
+
+Optics = pm.readOptics('y')
+import matplotlib.pyplot as plt
+plt.figure()
+plt.plot(Optics[:,-1],Optics[:,0])
+plt.savefig('beta.png')
+plt.figure()
+plt.plot(Optics[:,-1],Optics[:,-2])
+plt.savefig('phadvance.png')

@@ -540,13 +540,18 @@ def readBeamSizeAtEnd(fileLoc=''):
 def readOptics(direction,nSkip=1,fileLoc=''):
     """
     f = readOptics(direction,nSkip=1,fileLoc='')
-    Read Optics functions ( Optics ftn is calcualted using beam porfile )
+    Read Optics functions ( Optics ftn is calcualted using beam porfile)
+    *** note that it is not optics of the lattice. 
+        it is optics of the beam.
+        Can be very different from lattice optics 
+        when large mismatch present. ****
     input 
-        zIndex = (int) 
+        direction = 'x' or 'y' or 'z'
         nSkip  = sampling rate from beam distribution output file of IMPACTz
         fileLoc = (string) path
     output 
-        f = optics parameters at every (sampling rate of nSkip) 
+        f = optics parameters at every (sampling rate of nSkip)
+            [beta,alpha,emittance,cumulated phase advance, z]
     """
     if direction == 'x':
         file = open(fileLoc+'fort.24','r')
@@ -557,14 +562,19 @@ def readOptics(direction,nSkip=1,fileLoc=''):
     lines = file.readlines()
     file.close()
     f=[]
+    ph = 0
+    z0 = 0
     for j in range(0,len(lines),nSkip) :
-        sigmax, sigmap, alpha, emittance_norm = [ float(lines[j].split()[i]) for i in [2,4,5,6] ]
+        z, sigmax, sigmap, alpha, emittance_norm = [ float(lines[j].split()[i]) for i in [0,2,4,5,6] ]
         beta=(1+alpha*alpha)**0.5 *sigmax/sigmap
+        ph = ph + (z-z0)/beta
         if direction == 'z':
-            f.append( [beta, alpha, emittance_norm] )
+            f.append( [beta, alpha, emittance_norm, ph, z] )
         else:
-            f.append( [beta, alpha, emittance_norm] )
-    return f
+            f.append( [beta, alpha, emittance_norm, ph, z] )
+        z0=z
+    return np.array(f)
+    
     
 def readOpticsAt(zIndex, direction, fileLoc=''):
     """
