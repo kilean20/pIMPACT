@@ -47,7 +47,7 @@ def getBeam() :
     output :
         Beam : (dict) Beam parameters 
     """
-    beam = {'nCore_x':1,'nCore_y':1,
+    beam = {'nCore_y':1,'nCore_z':1,
             'mass': 938.27231e6, # eV/c^2
             'energy': 150.0e6, # eV
             'n_particles': 1,
@@ -129,7 +129,7 @@ def beam2str(beam):
     output 
         beamStrList = (list) list of string of IMPACT format of beam
     """
-    beamStrList=[str(beam['nCore_x'])+' '+str(beam['nCore_y'])+' \n',
+    beamStrList=[str(beam['nCore_y'])+' '+str(beam['nCore_z'])+' \n',
                  '6 '+str(beam['n_particles'])+' 2 '+\
                  str(beam['error study flag'])+' '+\
                  str(beam['standard output'])+' \n',
@@ -161,7 +161,7 @@ def str2beam(beamStr):
         beam = (dict) beam dictionary
     """
     beam=getBeam()
-    beam['nCore_x'],beam['nCore_y']=[int(beamStr[0].split()[0]) for i in range(2)]
+    beam['nCore_y'],beam['nCore_z']=[int(beamStr[0].split()[0]) for i in range(2)]
     beam['n_particles']=int(beamStr[1].split()[1])
     beam['mesh_x'],beam['mesh_y'],beam['mesh_z']=[int(beamStr[2].split()[0]) for i in range(3)]
     #beam['distribution id']=int(beamStr[3].split()[0])
@@ -326,13 +326,13 @@ def str2elem(elemStr):
                    }
     elif elemID == -2:
         elemtDict= {'type':'write full',
-                    'file id': int(elemStr[2])}                   
+                    'file id': int(elemStr[2])}
     elif elemID == -7:
         elemtDict= {'type':'restart'}
     elif elemID == -99:
         elemtDict= {'type':'halt'} 
     else :
-        elemtDict= {}            
+        elemtDict= {}
     return elemtDict
   
 #%%=================================lattice====================================
@@ -369,7 +369,7 @@ def str2lattice(latticeStr):
         elem = str2elem(latticeStr[i])
         if elem : #check if elem is not empty
             lattice.append(elem)
-    return lattice    
+    return lattice
 
 
 def getElemIndex(lattice,typename):
