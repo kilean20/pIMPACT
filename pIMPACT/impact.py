@@ -67,6 +67,7 @@ def getBeam() :
     beam['charge per mass']=1.0/beam['mass']
     return beam
 
+    
 def twiss2beam(beam,betx=0.0,alfx=0.0,norm_ex=0.0,
                     bety=0.0,alfy=0.0,norm_ey=0.0,
                     betz=0.0,alfz=0.0,norm_ez=0.0):
@@ -529,7 +530,7 @@ def readBeamSizeAt(zIndex,direction,nSkip=1,fileLoc=''):
     lines = file.readlines()
     file.close()
     
-    return float(lines[zIndex].split()[2])    
+    return float(lines[zIndex].split()[2])
     
 def readBeamSizeAtEnd(fileLoc=''):
     return [readBeamSizeAt(-1,'x',fileLoc),
